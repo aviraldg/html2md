@@ -55,6 +55,24 @@ func generate(initialNode *html.Node) (value string) {
 				href := getAttributeValue(node.Attr, "href")
 				value += fmt.Sprintf("[%s](%s)", generate(node.FirstChild), href)
 			}
+			case "ol", "ul": {
+				value += "\n" + generate(node.FirstChild)
+			}
+			case "li": {
+				if node.Parent != nil && node.Parent.Type == html.ElementNode {
+					pTag := node.Parent.Data
+					if pTag == "ul" {
+						value += fmt.Sprint("* ", generate(node.FirstChild), "\n")
+					} else if pTag == "ol" {
+						value += fmt.Sprint("1. ", generate(node.FirstChild), "\n")
+					} else {
+						continue
+					}
+				}
+			}
+			default:
+				// less breakage than simply omitting node
+				value += generate(node.FirstChild)
 			}
 		default:
 			log.Warn("Unsupported node type")
